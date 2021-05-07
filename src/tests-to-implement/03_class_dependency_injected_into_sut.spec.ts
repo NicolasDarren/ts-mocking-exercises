@@ -1,29 +1,26 @@
 import { describe, expect, it } from '@jest/globals'
+import { PricingService } from "../dependencies/PricingService"
+import { ItemPriceAdjuster } from './03_class_dependency_injected_into_sut';
 
-export const inject = <Dependencies, FunctionFactory>(
-  buildFunction: (dependencies: Dependencies) => FunctionFactory,
-  buildDependencies: () => Dependencies
-) => (dependencies = buildDependencies()) => ({
-  execute: buildFunction(dependencies),
-  dependencies,
-});
-
+jest.mock('../dependencies/PricingService');  // <= auto-mock the module
 describe('ItemPriceAdjuster', () => {
   describe('price is less than 100', () => {
-    it.skip('marks item price up by the markup percentage', async () => {
+    it('marks item price up by the markup percentage', async () => {
       // Arrange
+      const pricingServiceMock = PricingService as jest.MockedClass<typeof PricingService> as any;      
+      pricingServiceMock.getMarkUpPercentage = jest.fn(() => 1);
       const item = {
-        id: '1',
-        name: 'item1',
-        price: 12,
-        description: 'New Item',
+        id: '3',
+        name: 'item3',
+        price: 55,
+        description: 'Third Item',
         created: new Date()
       };
-      
+      var sut = new ItemPriceAdjuster(pricingServiceMock);
       // Act
-      
+      var result = await sut.adjustPrice(item);
       // Assert
-      expect('not to finish');
+      expect(result.price).toBe(55.55);
     })
   })
 
